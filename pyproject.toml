@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "roe-teer"
+version = "0.1.0"
+description = ""
+authors = ["cheetahbyte <40123243+cheetahbyte@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{include = "roe_teer", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
