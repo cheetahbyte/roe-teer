@@ -1,5 +1,5 @@
 from .n import Node, Param, Result
-from typing import TypeVar, List, Tuple
+from typing import TypeVar, List, Tuple, Dict
 
 T = TypeVar('T')
 
