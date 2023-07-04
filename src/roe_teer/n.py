@@ -3,29 +3,34 @@ import re
 from copy import deepcopy
 from typing import Generic, TypeVar, List, Dict, Tuple, Callable
 
+
 def longest_common_prefix(a: str, b: str) -> int:
     i = 0
     l = min(len(a), len(b))
     while i < l and a[i] == b[i]:
         i += 1
     return i
-    
+
+
 T = TypeVar('T')
+
 
 class Param:
     def __init__(self, value: str, type: str | None) -> None:
         self.value: str = value
         self.type: str | None = type
-    
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Param):
             return False
         return self.value == other.value and self.type == other.type
 
+
 class Result(Generic[T]):
     def __init__(self) -> None:
         self.handler: List[T] = []
         self.params: Dict[str, Param] = {}
+
 
 class Node(Generic[T]):
     def __init__(self, path: str = None, handler: List[T] = None, children: Dict[str, "Node"] = None) -> None:
@@ -43,13 +48,13 @@ class Node(Generic[T]):
         while i >= 0:
             node, checked, path, result, walkedBy = stack[i]
             restPath: str = ""
-            
+
             if checked:
                 i -= 1
                 continue
             else:
                 stack[i] = (node, True, path, result, walkedBy)
-            
+
             if len(node.path) > 0 and node.path[0] == "*":
                 if node.paramName is None:
                     raise Exception(f"Catch all wildcard has no name in '{node.path}'")
@@ -89,7 +94,7 @@ class Node(Generic[T]):
 
                 if stacked:
                     stack[i] = (node, True, path, result, True)
-            
+
             if restPath == "":
                 if not stacked:
                     result.handler = node.handler
@@ -104,7 +109,7 @@ class Node(Generic[T]):
                         result.handler = node.handler
                         results.append(result)
                     return results
-            
+
             if "*" in node.children:
                 i += 1
                 stack.insert(i, (node.children["*"], False, restPath, deepcopy(result), False))
@@ -127,7 +132,7 @@ class Node(Generic[T]):
             return results
         return None
 
-    def insert(self, path: str, *arg: List[T]) -> "Node":
+    def insert(self, path: str, *arg) -> "Node":
         start = end = 0
         while end < len(path):
             if path[end] in [':', "*"]:
@@ -139,12 +144,15 @@ class Node(Generic[T]):
                 if wildcard == "*":
                     end = len(path)
                     p = path[start:end]
-                    result = re.match(r"^\*(?P<paramName>[a-z0-9._-]*)(\|(?P<type>[a-zA-Z_]*))?$", p, flags=re.IGNORECASE)
+                    result = re.match(r"^\*(?P<paramName>[a-z0-9._-]*)(\|(?P<type>[a-zA-Z_]*))?$", p,
+                                      flags=re.IGNORECASE)
                     if result is None:
-                        raise Exception(f"Malformatted catch all wildcard '{p}': required format: *catch-all|type where catch-all name can only contain a-z, A-Z, 0-9, ., _, -")
+                        raise Exception(
+                            f"Malformed catch all wildcard '{p}': required format: *catch-all|type where catch-all name can only contain a-z, A-Z, 0-9, ., _, -")
 
                     if wildcard in self.children:
-                        raise Exception(f"Cannot add '{p}': another catch all wildcard '{self.children[wildcard].path}' already exists")
+                        raise Exception(
+                            f"Cannot add '{p}': another catch all wildcard '{self.children[wildcard].path}' already exists")
 
                     child = Node(p, [], {})
                     child.paramName = result.group("paramName")
@@ -153,12 +161,15 @@ class Node(Generic[T]):
                     self = child
                     start = end
                     break
-                
+
                 if wildcard == ":":
-                    result = re.search(r"^(:(?P<paramName>[a-zA-Z0-9._-]+)(\((?P<regex>.*?)\))?(\|(?P<type>[a-zA-Z_]*))?)", path[start:], flags=re.IGNORECASE)
+                    result = re.search(
+                        r"^(:(?P<paramName>[a-zA-Z0-9._-]+)(\((?P<regex>.*?)\))?(\|(?P<type>[a-zA-Z_]*))?)",
+                        path[start:], flags=re.IGNORECASE)
                     if result is None:
                         # Should never get thrown...
-                        raise Exception(f"Malformatted parameter wildcard in '{path}': required format: :parameter-name(optional regex)|optional type/optional additional path where parameter name can container A-Z, a-z, 0-9, ., _, - and type can container A-Z, a-z, 0-9")
+                        raise Exception(
+                            f"Malformed parameter wildcard in '{path}': required format: :parameter-name(optional regex)|optional type/optional additional path where parameter name can container A-Z, a-z, 0-9, ., _, - and type can container A-Z, a-z, 0-9")
 
                     end += result.end()
                     p = path[start:end]
@@ -166,7 +177,8 @@ class Node(Generic[T]):
                     child = self.children[wildcard] if wildcard in self.children else None
                     if child is not None:
                         if child.path != p:
-                            raise Exception(f"Parameter name '{p}' in '{path}' should be equal to previous provided name '{child.path}'")
+                            raise Exception(
+                                f"Parameter name '{p}' in '{path}' should be equal to previous provided name '{child.path}'")
                     else:
                         child = Node(p, [], {})
                         child.paramName = result.group("paramName")
@@ -176,7 +188,7 @@ class Node(Generic[T]):
                     self = child
             else:
                 end += 1
-    
+
         if start < len(path):
             self = self.merge(path[start:])
 
@@ -184,22 +196,22 @@ class Node(Generic[T]):
             for handler in arg:
                 if handler not in self.handler:
                     self.handler.append(handler)
-            
+
         return self
-    
+
     def merge(self, path: str) -> "Node":
         lcp = longest_common_prefix(path, self.path)
-        
+
         if lcp == 0 and len(self.children) == 0:
             self.path = path
             return self
-        
+
         if lcp < len(self.path):
             child = Node(self.path[lcp:], self.handler, self.children)
             self.path = path[:lcp]
-            self.children = { child.path[0]: child }
+            self.children = {child.path[0]: child}
             self.handler = []
-        
+
         if lcp < len(path):
             if path[lcp] in self.children:
                 self = self.children[path[lcp]].insert(path[lcp:])
@@ -207,5 +219,5 @@ class Node(Generic[T]):
                 child = Node(path[lcp:], [], {})
                 self.children[path[lcp]] = child
                 self = child
-        
+
         return self
