@@ -1,5 +1,6 @@
 import pytest
 from roe_teer.n import Node, Result, Param
+
 n = Node()
 
 
@@ -33,7 +34,8 @@ def test_node_dynamic_param_lookup(node):
     """check if node is able to find handler and return dynamic params"""
     result = node.lookup("/here_param")
     assert isinstance(result, Result) and result.handler == ["Handler p"] and isinstance(
-        result.params, dict) and isinstance(result.params.get("param"), Param) and result.params.get("param").value == "here_param"
+        result.params, dict) and isinstance(result.params.get("param"), Param) and result.params.get(
+        "param").value == "here_param"
 
 
 def test_node_dynamic_param_id_regex_insert(node):
@@ -47,6 +49,6 @@ def test_node_dynamic_param_id_regex_lookup_success(node):
         result.params, dict) and isinstance(result.params.get("id"), Param) and result.params.get("id").value == "123"
 
 
-def test_node_dynamic_param_id_regex_lookup_notfound(node):
+def test_node_dynamic_param_id_regex_lookup_not_found(node):
     result = node.lookup("/test/test")
     assert result is None
