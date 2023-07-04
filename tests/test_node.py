@@ -1,12 +1,19 @@
 import pytest
 from roe_teer.n import Node, Result, Param
+from roe_teer.roeteer import Roeteer
 
 n = Node()
+t = Roeteer()
 
 
 @pytest.fixture
 def node():
     return n
+
+
+@pytest.fixture
+def root():
+    return t
 
 
 def test_node(node):
@@ -52,3 +59,13 @@ def test_node_dynamic_param_id_regex_lookup_success(node):
 def test_node_dynamic_param_id_regex_lookup_not_found(node):
     result = node.lookup("/test/test")
     assert result is None
+
+
+def test_add_new_radix_with_different_method_creates_node(root):
+    result = root._add_radix("<method>")
+    assert isinstance(result, Node)
+
+
+def test_add_new_radix_with_different_method_exists(root):
+    result = root._get_radix("<method>")
+    assert result is not None and isinstance(result, Node)
