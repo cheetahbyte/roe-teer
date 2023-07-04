@@ -3,15 +3,20 @@ from typing import TypeVar, List, Tuple, Dict
 
 T = TypeVar('T')
 
+
 class Roeteer:
     def __init__(self) -> None:
         self._radix: Dict[str, Node[T]] = {}
 
     def _get_radix(self, method: str) -> Node[T]:
-        if method not in self._radix:
-            self._radix[method] = Node[T]()
         return self._radix[method]
 
+    def _add_radix(self, method: str) -> None | Node:
+        """adds new radix tree to store"""
+        n: None | Node = None
+        if method not in self._radix:
+            n = self._radix[method] = Node[T]()
+        return n
 
     def use(self, path: str, handler: T) -> None:
         if '*' in path:
