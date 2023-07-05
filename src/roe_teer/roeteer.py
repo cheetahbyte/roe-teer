@@ -1,5 +1,5 @@
 from .n import Node, Param, Result
-from typing import TypeVar, List, Tuple, Dict
+from typing import TypeVar, List, Tuple, Dict, Type
 
 T = TypeVar('T')
 
@@ -8,9 +8,10 @@ class Roeteer:
         self._radix: Dict[str, Node[T]] = {}
 
     def _get_radix(self, method: str) -> Node[T]:
-        if method not in self._radix:
-            self._radix[method] = Node[T]()
-        return self._radix[method]
+        try:
+            return self._radix[method]
+        except:
+            return self._add_radix(method)
 
 
     def use(self, path: str, handler: T) -> None:
@@ -57,3 +58,10 @@ class Roeteer:
             for handler in result.handler:
                 handlers.append((handler, result.params))
         return handlers
+
+    def _add_radix(self, method) -> Node | None:
+        if method not in self._radix:
+            self._radix[method] = Node[T]()
+            return self._radix[method]
+        return None
+
