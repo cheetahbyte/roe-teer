@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "roe-teer"
+name = "roe_teer"
 version = "0.1.0"
 description = ""
 authors = ["cheetahbyte <40123243+cheetahbyte@users.noreply.github.com>"]
