@@ -1,5 +1,5 @@
 from .n import Node, Param, Result
-from typing import TypeVar, List, Tuple, Dict
+from typing import TypeVar, List, Tuple, Dict, Type
 
 T = TypeVar('T')
 
@@ -9,7 +9,10 @@ class Roeteer:
         self._radix: Dict[str, Node[T]] = {}
 
     def _get_radix(self, method: str) -> Node[T]:
-        return self._radix[method]
+        try:
+            return self._radix[method]
+        except:
+            return self._add_radix(method)
 
     def _add_radix(self, method: str) -> None | Node:
         """adds new radix tree to store"""
